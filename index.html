@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Frais Réels" />
+  <title>Frais Réels</title>
+  <link rel="manifest" id="pwa-manifest" />
+  <meta name="theme-color" content="#0f0f13" />
+  <link rel="apple-touch-icon" id="apple-icon" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Thème sombre (défaut) ── */
+    :root {
+      --bg:       #0f0f13;
+      --bg2:      #16161e;
+      --bg3:      #1a1a22;
+      --bg4:      #1e2030;
+      --border:   #2a2a38;
+      --border2:  #2a2a44;
+      --text:     #e8e0d0;
+      --text2:    #888;
+      --text3:    #aaa;
+      --text4:    #666;
+      --gold:     #c8a96e;
+      --gold-dim: #c8a96e22;
+      --gold-dim2:#c8a96e44;
+      --summary-bg: #0f0f13;
+      --divider:  #2a2a38;
+      --toggle-off: #2a2a38;
+      --inner-bg: #1a1a28;
+      --footer:   #333;
+      --h1:       #f0e8d8;
+      --sub:      #555;
+    }
+    /* ── Thème clair ── */
+    [data-theme="light"] {
+      --bg:       #f4f1eb;
+      --bg2:      #ffffff;
+      --bg3:      #f0ede6;
+      --bg4:      #e8e4dc;
+      --border:   #ddd8cc;
+      --border2:  #d0cbbe;
+      --text:     #1a1610;
+      --text2:    #777;
+      --text3:    #555;
+      --text4:    #999;
+      --gold:     #a07838;
+      --gold-dim: #a0783818;
+      --gold-dim2:#a0783830;
+      --summary-bg: #faf8f4;
+      --divider:  #e0dbd0;
+      --toggle-off: #ccc;
+      --inner-bg: #f0ede6;
+      --footer:   #bbb;
+      --h1:       #1a1610;
+      --sub:      #999;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: "Georgia", serif;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.3s, color 0.3s;
+    }
+    input[type=number], input[type=date], select, input[type=text] {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 16px;
+      width: 100%;
+      font-family: "Georgia", serif;
+      outline: none;
+      transition: border 0.2s;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus { border-color: var(--gold); }
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .label {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text2);
+      margin-bottom: 6px;
+      display: block;
+    }
+    .result-num {
+      font-size: 42px;
+      font-weight: bold;
+      color: var(--gold);
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+    .result-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: "Georgia", serif;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      width: 100%;
+    }
+    .btn-gold { background: var(--gold); color: var(--bg); font-weight: bold; }
+    .btn-gold:active { filter: brightness(1.1); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text3); }
+    .btn-outline:active { border-color: var(--gold); color: var(--gold); }
+    .btn-danger {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text3);
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: "Georgia", serif;
+    }
+    .btn-danger:active { border-color: #a44; color: #f88; }
+    .tab-bar { display: flex; gap: 8px; margin-bottom: 20px; }
+    .tab {
+      flex: 1;
+      padding: 12px 8px;
+      border-radius: 12px;
+      font-family: "Georgia", serif;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      color: var(--text4);
+      text-align: center;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab.active { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+    .summary-box {
+      background: var(--summary-bg);
+      border: 1px solid var(--gold-dim2);
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 15px;
+      line-height: 1.9;
+      color: var(--text);
+    }
+    .tag {
+      display: inline-block;
+      background: var(--bg4);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 12px;
+      color: var(--text3);
+      margin: 2px;
+    }
+    .section-title { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+    .divider { height: 1px; background: var(--divider); margin: 16px 0; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
+    .toggle-label { font-size: 14px; color: var(--text3); }
+    .toggle {
+      width: 44px; height: 26px; border-radius: 13px;
+      background: var(--toggle-off);
+      position: relative; cursor: pointer;
+      transition: background 0.2s; border: none;
+      -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+    }
+    .toggle.on { background: var(--gold); }
+    .toggle::after {
+      content: ""; position: absolute;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: white; top: 3px; left: 3px;
+      transition: transform 0.2s;
+    }
+    .toggle.on::after { transform: translateX(18px); }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .animate { animation: fadeIn 0.3s ease; }
+    .footer { text-align: center; font-size: 11px; color: var(--footer); margin-top: 8px; padding-bottom: 24px; }
+
+    /* Bouton thème */
+    .theme-btn {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      color: var(--text3);
+      font-family: "Georgia", serif;
+      -webkit-tap-highlight-color: transparent;
+      transition: all 0.2s;
+    }
+    .theme-btn:active { border-color: var(--gold); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const FERIES = {
+      2025: ["2025-01-01","2025-04-21","2025-05-01","2025-05-08","2025-05-29","2025-06-09","2025-07-14","2025-08-15","2025-11-01","2025-11-11","2025-12-25"],
+      2026: ["2026-01-01","2026-04-06","2026-05-01","2026-05-08","2026-05-14","2026-05-25","2026-07-14","2026-08-15","2026-11-01","2026-11-11","2026-12-25"],
+      2027: ["2027-01-01","2027-03-29","2027-05-01","2027-05-06","2027-05-08","2027-05-17","2027-07-14","2027-08-15","2027-11-01","2027-11-11","2027-12-25"],
+      2028: ["2028-01-01","2028-04-17","2028-05-01","2028-05-08","2028-05-25","2028-06-05","2028-07-14","2028-08-15","2028-11-01","2028-11-11","2028-12-25"],
+      2029: ["2029-01-01","2029-04-02","2029-05-01","2029-05-08","2029-05-10","2029-05-21","2029-07-14","2029-08-15","2029-11-01","2029-11-11","2029-12-25"],
+      2030: ["2030-01-01","2030-04-22","2030-05-01","2030-05-08","2030-05-30","2030-06-10","2030-07-14","2030-08-15","2030-11-01","2030-11-11","2030-12-25"],
+    };
+
+    // Lundi de Pentecôte par année
+    const PENTECOTE = {
+      2025: "2025-06-09", 2026: "2026-05-25", 2027: "2027-05-17",
+      2028: "2028-06-05", 2029: "2029-05-21", 2030: "2030-06-10",
+    };
+
+    const BAREME_DEFAULT_6CV  = { t1: 0.665, t1b: 0.374, t1c: 1457, t2: 0.446 };
+    const BAREME_DEFAULT_5CV  = { t1: 0.636, t1b: 0.357, t1c: 1395, t2: 0.427 };
+
+    function baremeKm(km, taux) {
+      const { t1, t1b, t1c, t2 } = taux;
+      if (km <= 0)     return 0;
+      if (km <= 5000)  return km * t1;
+      if (km <= 20000) return (km * t1b) + t1c;
+      return km * t2;
+    }
+
+    function toKey(d) {
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    }
+    function fmt(d) {
+      return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
+    }
+    function parseLocal(str) {
+      const [y,m,d] = str.split("-").map(Number);
+      return new Date(y, m-1, d);
+    }
+
+    function calcul({ annee, conges, distance, taux, avecTeletravail, pentecoteTravaille }) {
+      const feriesBase = new Set(FERIES[annee] || []);
+      if (pentecoteTravaille && PENTECOTE[annee]) feriesBase.delete(PENTECOTE[annee]);
+      const feries = feriesBase;
+      const congesSet = new Set();
+      const congesDetail = [];
+
+      for (const { debut, fin } of conges) {
+        if (!debut || !fin) { congesDetail.push(0); continue; }
+        const cur = parseLocal(debut);
+        const end = parseLocal(fin);
+        let count = 0;
+        while (cur <= end) {
+          const key = toKey(cur);
+          const dow = cur.getDay();
+          if (dow >= 1 && dow <= 5 && !feries.has(key)) count++;
+          congesSet.add(key);
+          cur.setDate(cur.getDate()+1);
+        }
+        congesDetail.push(count);
+      }
+
+      const jours = [], vendredis = [];
+      let congesOuvres = 0;
+      const cur = new Date(annee, 0, 1);
+      const end = new Date(annee, 11, 31);
+      while (cur <= end) {
+        const dow = cur.getDay();
+        const key = toKey(cur);
+        const isOuvre = dow >= 1 && dow <= 5;
+        if (isOuvre && !feries.has(key) && !congesSet.has(key)) {
+          jours.push(new Date(cur));
+          if (dow === 5) vendredis.push(new Date(cur));
+        }
+        if (isOuvre && !feries.has(key) && congesSet.has(key)) congesOuvres++;
+        cur.setDate(cur.getDate()+1);
+      }
+      const joursPresentiels = avecTeletravail ? jours.length - vendredis.length : jours.length;
+      const teletravail = avecTeletravail ? vendredis.length : 0;
+      const kmTotal = joursPresentiels * distance;
+      const frais = baremeKm(kmTotal, taux);
+      const congesOuvresTotal = congesDetail.reduce((a, b) => a + b, 0);
+      return {
+        travailles: jours.length,
+        teletravail,
+        presentiel: joursPresentiels,
+        km: kmTotal,
+        frais: Math.round(frais),
+        congesOuvres: congesOuvresTotal,
+        congesDetail,
+        vendredisListe: vendredis
+      };
+    }
+
+    const defaultCongesA = [
+      { debut: "2025-04-22", fin: "2025-04-25" },
+      { debut: "2025-05-27", fin: "2025-05-30" },
+      { debut: "2025-07-28", fin: "2025-08-14" },
+      { debut: "2025-12-22", fin: "2025-12-26" },
+    ];
+
+
+    // ── Supabase config ──────────────────────────────────────────
+    const SB_URL  = "https://avstledmukaegkdgfteb.supabase.co";
+    const SB_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2c3RsZWRtdWthZWdrZGdmdGViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTc5NTYsImV4cCI6MjA5Mjg5Mzk1Nn0.uhpKpnXQXMRM1UiWdTSgos7xHOIb5Ka7KxCweE1G0YQ";
+    const SB_HEADERS = { "Content-Type": "application/json", "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` };
+
+    async function sbLoad() {
+      try {
+        const r = await fetch(`${SB_URL}/rest/v1/frais_reels?id=eq.default&select=data`, { headers: SB_HEADERS });
+        if (!r.ok) {
+          console.warn("Supabase load error:", r.status, await r.text());
+          return null;
+        }
+        const rows = await r.json();
+        return rows.length ? rows[0].data : {};
+      } catch(e) {
+        console.warn("Supabase fetch failed:", e.message);
+        return null;
+      }
+    }
+
+    async function sbSave(data) {
+      try {
+        const r = await fetch(`${SB_URL}/rest/v1/frais_reels?id=eq.default`, {
+          method: "PATCH",
+          headers: { ...SB_HEADERS, "Prefer": "return=minimal" },
+          body: JSON.stringify({ data, updated_at: new Date().toISOString() })
+        });
+        if (!r.ok) console.warn("Supabase save error:", r.status, await r.text());
+      } catch(e) { console.warn("Supabase save failed:", e.message); }
+    }
+
+    // localStorage comme cache local immédiat
+    function loadSaved(key, fallback) {
+      try {
+        const v = localStorage.getItem(key);
+        return v ? JSON.parse(v) : fallback;
+      } catch(e) { return fallback; }
+    }
+    function save(key, val) {
+      try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+    }
+
+    // Collecte tout l'état pour Supabase
+    function collectAll() {
+      const keys = [
+        "app_annee","app_tab","app_dark",
+        "stonic_distance","stonic_tt","stonic_taux","stonic_pent",
+        "kadjar_distance","kadjar_tt","kadjar_taux","kadjar_pent",
+      ];
+      // Ajouter les congés par année
+      [2025,2026,2027,2028,2029,2030].forEach(y => {
+        keys.push(`stonic_conges_${y}`, `kadjar_conges_${y}`);
+      });
+      const data = {};
+      keys.forEach(k => {
+        try { const v = localStorage.getItem(k); if (v) data[k] = JSON.parse(v); } catch(e) {}
+      });
+      return data;
+    }
+
+    // Restaure tout depuis Supabase dans localStorage
+    function restoreAll(data) {
+      if (!data) return;
+      Object.entries(data).forEach(([k, v]) => {
+        try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {}
+      });
+    }
+
+    // Debounce pour ne pas flood Supabase
+    let sbTimer = null;
+    function scheduleSbSave() {
+      clearTimeout(sbTimer);
+      sbTimer = setTimeout(() => sbSave(collectAll()), 1500);
+    }
+
+    function VehiculePanel({ vehicule, annee }) {
+      const sk = vehicule.id;
+      const [distanceAR, setDistanceAR] = useState(() => loadSaved(`${sk}_distance`, vehicule.distanceDefault));
+      const [conges, setConges] = useState(() => loadSaved(`${sk}_conges_${annee}`, annee === 2025 ? vehicule.congesDefault : []));
+      const [avecTeletravail, setAvecTeletravail] = useState(() => loadSaved(`${sk}_tt`, vehicule.teletravailDefault));
+      const [pentecoteTravaille, setPentecoteTravaille] = useState(() => loadSaved(`${sk}_pent`, false));
+      const [taux, setTaux] = useState(() => loadSaved(`${sk}_taux`, vehicule.baremeDefault));
+      const [result, setResult] = useState(null);
+      const [showVendredis, setShowVendredis] = useState(false);
+      const [showBareme, setShowBareme] = useState(false);
+      const [copied, setCopied] = useState(false);
+
+      function updateTaux(field, val) {
+        const v = parseFloat(val.replace(",", "."));
+        setTaux(prev => ({ ...prev, [field]: isNaN(v) ? 0 : v }));
+      }
+
+      useEffect(() => {
+        setResult(calcul({ annee, conges, distance: distanceAR, taux, avecTeletravail, pentecoteTravaille }));
+      }, [annee, JSON.stringify(conges), distanceAR, JSON.stringify(taux), avecTeletravail, pentecoteTravaille]);
+
+      useEffect(() => { save(`${sk}_distance`, distanceAR); scheduleSbSave(); }, [distanceAR]);
+      useEffect(() => { save(`${sk}_conges_${annee}`, conges); scheduleSbSave(); }, [JSON.stringify(conges)]);
+      useEffect(() => { save(`${sk}_tt`, avecTeletravail); scheduleSbSave(); }, [avecTeletravail]);
+      useEffect(() => { save(`${sk}_taux`, taux); scheduleSbSave(); }, [JSON.stringify(taux)]);
+      useEffect(() => { save(`${sk}_pent`, pentecoteTravaille); scheduleSbSave(); }, [pentecoteTravaille]);
+
+      // Charger les congés de l'année sélectionnée
+      const prevAnneeRef = React.useRef(annee);
+      useEffect(() => {
+        if (prevAnneeRef.current !== annee) {
+          const defaultForYear = annee === 2025 ? vehicule.congesDefault : [];
+          setConges(loadSaved(`${sk}_conges_${annee}`, defaultForYear));
+          prevAnneeRef.current = annee;
+        }
+      }, [annee]);
+
+      function addConge() {
+        const defaultDate = `${annee}-01-01`;
+        setConges([...conges, { debut: defaultDate, fin: defaultDate }]);
+      }
+      function removeConge(i) { setConges(conges.filter((_,idx) => idx !== i)); }
+      function updateConge(i, field, val) {
+        if (field === "debut") {
+          // Pré-remplir la fin avec la date de début si elle est vide
+          setConges(conges.map((c,idx) => idx === i ? {...c, debut: val, fin: c.fin || val} : c));
+        } else {
+          setConges(conges.map((c,idx) => idx === i ? {...c, [field]: val} : c));
+        }
+      }
+
+      const summary = result ? [
+        `${result.travailles} jours travaillés${pentecoteTravaille ? " (dont le lundi de Pentecôte : journée de solidarité)" : ""}`,
+        avecTeletravail ? `- ${result.teletravail} jours de télétravail` : null,
+        avecTeletravail && vehicule.showPresentiel !== false ? `soit ${result.presentiel} jours en présentiel` : null,
+        `distance domicile - travail : ${distanceAR} Kms aller-retour`,
+        `soit ${result.presentiel} × ${distanceAR} Kms = ${result.km.toLocaleString("fr-FR")} Kms`,
+        `Voiture : ${vehicule.nom}`,
+        `Soit ${result.frais.toLocaleString("fr-FR")} €`,
+      ].filter(Boolean).join("\n") : "";
+
+      function copier() {
+        const txt = summary;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(txt).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+        } else {
+          const ta = document.createElement("textarea");
+          ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+          setCopied(true); setTimeout(() => setCopied(false), 2000);
+        }
+      }
+
+      return (
+        <div className="animate">
+          {/* Distance + Toggle TT */}
+          <div className="card">
+            <div className="section-title">Paramètres — {vehicule.nom}</div>
+            <div style={{marginBottom:12}}>
+              <span className="label">Distance A/R (km)</span>
+              <input type="number" value={distanceAR} min={2} step={2}
+                onChange={e => setDistanceAR(Number(e.target.value))} />
+            </div>
+            {vehicule.showTeletravail !== false && (
+              <div className="toggle-row">
+                <span className="toggle-label">Vendredis en télétravail</span>
+                <button className={`toggle ${avecTeletravail ? "on" : ""}`}
+                  onClick={() => setAvecTeletravail(!avecTeletravail)} />
+              </div>
+            )}
+            <div className="toggle-row">
+              <span className="toggle-label">Lundi de Pentecôte travaillé</span>
+              <button className={`toggle ${pentecoteTravaille ? "on" : ""}`}
+                onClick={() => setPentecoteTravaille(!pentecoteTravaille)} />
+            </div>
+            <div style={{marginTop:12}}>
+              <button className="btn btn-outline" style={{fontSize:12}}
+                onClick={() => setShowBareme(!showBareme)}>
+                {showBareme ? "▲" : "▼"} Barème {vehicule.cv} — {taux.t1.toString().replace(".","\,")} / {taux.t1b.toString().replace(".","\,")} + {taux.t1c} / {taux.t2.toString().replace(".","\,")}
+              </button>
+              {showBareme && (
+                <div style={{marginTop:12, background:"var(--bg)", borderRadius:10, padding:14}}>
+                  <div style={{fontSize:11, color:"var(--gold)", letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:10}}>
+                    Taux {vehicule.cv} — à mettre à jour si revalorisé
+                  </div>
+                  <div className="grid2">
+                    <div>
+                      <span className="label">≤ 5 000 km (d × x)</span>
+                      <input type="text" inputMode="decimal" value={taux.t1.toString().replace(".",",")}
+                        onChange={e => updateTaux("t1", e.target.value)} />
+                    </div>
+                    <div>
+                      <span className="label">&gt; 20 000 km (d × x)</span>
+                      <input type="text" inputMode="decimal" value={taux.t2.toString().replace(".",",")}
+                        onChange={e => updateTaux("t2", e.target.value)} />
+                    </div>
+                    <div>
+                      <span className="label">5 001–20 000 km (d × x)</span>
+                      <input type="text" inputMode="decimal" value={taux.t1b.toString().replace(".",",")}
+                        onChange={e => updateTaux("t1b", e.target.value)} />
+                    </div>
+                    <div>
+                      <span className="label">5 001–20 000 km (+ x)</span>
+                      <input type="text" inputMode="decimal" value={taux.t1c.toString().replace(".",",")}
+                        onChange={e => updateTaux("t1c", e.target.value)} />
+                    </div>
+                  </div>
+                  <button className="btn btn-outline" style={{marginTop:10, fontSize:12}}
+                    onClick={() => setTaux(vehicule.baremeDefault)}>
+                    ↺ Réinitialiser aux taux officiels
+                  </button>
+                  <div style={{marginTop:8, fontSize:11, color:"var(--footer)", textAlign:"center"}}>
+                    <a href="https://www.impots.gouv.fr/simulateur-bareme-kilometrique"
+                      target="_blank" rel="noopener noreferrer"
+                      style={{color:"var(--gold)", textDecoration:"none"}}>
+                      Vérifier sur impots.gouv.fr ↗
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Congés */}
+          <div className="card">
+            <div className="section-title">Périodes de congés</div>
+            {conges.map((c, i) => (
+              <div key={i} style={{marginBottom:10}}>
+                <div style={{display:"grid", gridTemplateColumns:"1fr 1fr auto", gap:8, alignItems:"end"}}>
+                  <div>
+                    {i === 0 && <span className="label">Du</span>}
+                    <input type="date" value={c.debut}
+                      min={`${annee}-01-01`} max={`${annee}-12-31`}
+                      onChange={e => updateConge(i,"debut",e.target.value)} />
+                  </div>
+                  <div>
+                    {i === 0 && <span className="label">Au</span>}
+                    <input type="date" value={c.fin}
+                      min={c.debut || `${annee}-01-01`} max={`${annee}-12-31`}
+                      onChange={e => updateConge(i,"fin",e.target.value)} />
+                  </div>
+                  <button className="btn-danger" onClick={() => removeConge(i)} style={{marginTop: i===0?18:0}}>✕</button>
+                </div>
+                {result && c.debut && c.fin && (
+                  <div style={{fontSize:12, color:"var(--gold)", marginTop:4, paddingLeft:2}}>
+                    📅 {result.congesDetail[i] || 0} jour{(result.congesDetail[i] || 0) > 1 ? "s" : ""} ouvré{(result.congesDetail[i] || 0) > 1 ? "s" : ""}
+                  </div>
+                )}
+              </div>
+            ))}
+            <button className="btn btn-outline" style={{marginTop:4}} onClick={addConge}>
+              + Ajouter une période
+            </button>
+            {result && conges.some(c => c.debut && c.fin) && (
+              <div style={{display:"flex", justifyContent:"space-between", alignItems:"baseline", marginTop:14, paddingTop:12, borderTop:"1px solid var(--divider)"}}>
+                <span style={{fontSize:13, color:"var(--text2)", letterSpacing:"0.04em", textTransform:"uppercase"}}>Total congés ouvrés</span>
+                <span style={{fontSize:24, fontWeight:"bold", color:"var(--gold)", fontFamily:"-apple-system, 'Helvetica Neue', Arial, sans-serif", fontVariantNumeric:"lining-nums tabular-nums"}}>{result.congesOuvres} j</span>
+              </div>
+            )}
+          </div>
+
+          {/* Résultats */}
+          {result && (
+            <div>
+              <div className="card">
+                <div className="section-title">Résultats {annee}</div>
+                {[
+                  { label: "Jours travaillés",     val: result.travailles,                    color: "var(--gold)" },
+                  avecTeletravail
+                    ? { label: "Vendredis télétravail", val: result.teletravail,               color: "#5a9fc8" }
+                    : null,
+                  vehicule.showPresentiel !== false && avecTeletravail
+                    ? { label: "Jours en présentiel",  val: result.presentiel,                color: "#a0c878" }
+                    : null,
+                  { label: "Kilomètres parcourus", val: result.km.toLocaleString("fr-FR"),     color: "#e07060" },
+                ].filter(Boolean).map((row, i, arr) => (
+                  <div key={i} style={{
+                    display:"flex", justifyContent:"space-between", alignItems:"baseline",
+                    padding:"10px 0",
+                    borderBottom: i < arr.length - 1 ? "1px solid var(--divider)" : "none"
+                  }}>
+                    <span style={{fontSize:13, color:"var(--text2)", letterSpacing:"0.04em"}}>{row.label}</span>
+                    <span style={{fontSize:36, fontWeight:"bold", color:row.color, fontFamily:"-apple-system, 'Helvetica Neue', Arial, sans-serif", fontVariantNumeric:"lining-nums tabular-nums", fontFeatureSettings:'"tnum", "lnum"', lineHeight:1}}>{row.val}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Résumé */}
+              <div className="card">
+                <div className="section-title">Résumé à copier</div>
+                <div className="summary-box">
+                  <div style={{whiteSpace:"pre-line", marginBottom:16}}>
+                    {summary.split("\nVoiture")[0]}
+                  </div>
+                  <div style={{borderTop:"1px solid var(--divider)", paddingTop:16}}>
+                    <div style={{fontSize:13, color:"var(--text2)", marginBottom:4}}>Voiture : {vehicule.nom}</div>
+                    <div style={{fontSize:42, fontWeight:"bold", color:"var(--gold)", lineHeight:1.1, fontFamily:"-apple-system, 'Helvetica Neue', Arial, sans-serif", fontVariantNumeric:"lining-nums tabular-nums", fontFeatureSettings:'"tnum", "lnum"', letterSpacing:"-0.01em"}}>
+                      {result.frais.toLocaleString("fr-FR")} €
+                    </div>
+                  </div>
+                </div>
+                <div style={{marginTop:10, fontSize:12, color:"var(--text2)", textAlign:"center"}}>
+                  Barème {vehicule.cv} officiel ·{" "}
+                  <a href="https://www.impots.gouv.fr/simulateur-bareme-kilometrique"
+                    target="_blank" rel="noopener noreferrer"
+                    style={{color:"var(--gold)", textDecoration:"none"}}>
+                    impots.gouv.fr ↗
+                  </a>
+                </div>
+                <button className="btn btn-gold" style={{marginTop:12}} onClick={copier}>
+                  {copied ? "✓ Copié !" : "📋 Copier le résumé"}
+                </button>
+                <div style={{marginTop:16, textAlign:"center", fontSize:15, letterSpacing:"0.1em", color:"var(--text3)", textTransform:"uppercase"}}>
+                  Case <span style={{color:"#e05555", fontWeight:"bold", fontSize:17}}>{vehicule.caseImpot}</span> — Frais réels
+                </div>
+              </div>
+
+              {/* Vendredis */}
+              {avecTeletravail && (
+                <div className="card">
+                  <button className="btn btn-outline" onClick={() => setShowVendredis(!showVendredis)}>
+                    {showVendredis ? "▲" : "▼"} Voir les {result.teletravail} vendredis télétravaillés
+                  </button>
+                  {showVendredis && (
+                    <div style={{marginTop:12}}>
+                      {result.vendredisListe.map((v,i) => (
+                        <span key={i} className="tag">{fmt(v)}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const VEHICULES = [
+      {
+        id: "stonic",
+        nom: "Kia Stonic essence 6cv fiscaux",
+        cv: "6CV",
+        distanceDefault: 80,
+        teletravailDefault: true,
+        baremeDefault: BAREME_DEFAULT_6CV,
+        caseImpot: "1AK",
+        showPresentiel: true,
+        congesDefault: [
+          { debut: "2025-04-22", fin: "2025-04-25" },
+          { debut: "2025-05-27", fin: "2025-05-30" },
+          { debut: "2025-07-28", fin: "2025-08-14" },
+          { debut: "2025-12-22", fin: "2025-12-26" },
+        ],
+      },
+      {
+        id: "kadjar",
+        nom: "Renault Kadjar Diesel 5cv fiscaux",
+        cv: "5CV",
+        distanceDefault: 34,
+        teletravailDefault: false,
+        baremeDefault: BAREME_DEFAULT_5CV,
+        caseImpot: "1BK",
+        showPresentiel: false,
+        showTeletravail: false,
+        congesDefault: [],
+      },
+    ];
+
+    function App() {
+      const [annee, setAnnee] = useState(() => loadSaved("app_annee", 2025));
+      const [activeTab, setActiveTab] = useState(() => loadSaved("app_tab", 0));
+      const [darkMode, setDarkMode] = useState(() => loadSaved("app_dark", true));
+      const [syncStatus, setSyncStatus] = useState("loading"); // loading | ok | offline
+
+      // Chargement initial depuis Supabase
+      useEffect(() => {
+        sbLoad().then(data => {
+          if (data && Object.keys(data).length > 0) {
+            restoreAll(data);
+            // Recharge les valeurs depuis localStorage après restauration
+            setAnnee(loadSaved("app_annee", 2025));
+            setActiveTab(loadSaved("app_tab", 0));
+            setDarkMode(loadSaved("app_dark", true));
+            setSyncStatus("ok");
+          } else {
+            setSyncStatus(data === null ? "offline" : "ok");
+          }
+        });
+      }, []);
+
+      useEffect(() => {
+        document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "light");
+      }, [darkMode]);
+
+      useEffect(() => { save("app_annee", annee); scheduleSbSave(); }, [annee]);
+      useEffect(() => { save("app_tab", activeTab); scheduleSbSave(); }, [activeTab]);
+      useEffect(() => { save("app_dark", darkMode); scheduleSbSave(); }, [darkMode]);
+
+      return (
+        <div style={{padding:"24px 16px 40px"}}>
+          {/* Header */}
+          <div style={{textAlign:"center", marginBottom:24, position:"relative"}}>
+            <button className="theme-btn"
+              style={{position:"absolute", right:0, top:0}}
+              onClick={() => setDarkMode(!darkMode)}>
+              {darkMode ? "☀️" : "🌙"}
+            </button>
+            <div style={{fontSize:11, letterSpacing:"0.2em", color:"var(--gold)", textTransform:"uppercase", marginBottom:6}}>
+              Calculateur
+            </div>
+            <h1 style={{fontSize:26, fontWeight:"normal", color:"var(--h1)", letterSpacing:"0.08em", textTransform:"uppercase"}}>Frais Réels</h1>
+            <div style={{fontSize:13, color:"var(--sub)", marginTop:4}}>France métropole · 2025–2030</div>
+            <div style={{fontSize:11, marginTop:6, color: syncStatus==="ok" ? "#6ab04c" : syncStatus==="loading" ? "var(--text2)" : "#e07060"}}>
+              {syncStatus==="ok" ? "☁️ Synchronisé" : syncStatus==="loading" ? "⏳ Chargement…" : "📵 Hors ligne (local)"}
+            </div>
+          </div>
+
+          {/* Année */}
+          <div className="card">
+            <div className="section-title">Année</div>
+            <select value={annee} onChange={e => setAnnee(Number(e.target.value))}>
+              <option value={2025}>2025</option>
+              <option value={2026}>2026</option>
+              <option value={2027}>2027</option>
+              <option value={2028}>2028</option>
+              <option value={2029}>2029</option>
+              <option value={2030}>2030</option>
+            </select>
+            <div style={{display:"flex", justifyContent:"space-between", alignItems:"baseline", marginTop:12, paddingTop:12, borderTop:"1px solid var(--divider)"}}>
+              <span style={{fontSize:12, color:"var(--text2)", letterSpacing:"0.04em", textTransform:"uppercase"}}>Jours ouvrés {annee}</span>
+              <span style={{fontSize:22, fontWeight:"bold", color:"var(--gold)", fontFamily:"-apple-system, 'Helvetica Neue', Arial, sans-serif", fontVariantNumeric:"lining-nums tabular-nums"}}>
+                {(() => {
+                  const feries = new Set(FERIES[annee] || []);
+                  let count = 0;
+                  const cur = new Date(annee, 0, 1);
+                  const end = new Date(annee, 11, 31);
+                  while (cur <= end) {
+                    const dow = cur.getDay();
+                    if (dow >= 1 && dow <= 5 && !feries.has(toKey(cur))) count++;
+                    cur.setDate(cur.getDate() + 1);
+                  }
+                  return count;
+                })()} j
+              </span>
+            </div>
+          </div>
+
+          {/* Onglets véhicules */}
+          <div className="tab-bar">
+            {VEHICULES.map((v, i) => (
+              <button key={v.id} className={`tab ${activeTab === i ? "active" : ""}`}
+                onClick={() => setActiveTab(i)}>
+                {v.id === "stonic" ? (
+                  <img src={darkMode ? "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDE1MjMgMzU5IiB3aWR0aD0iMTUyMyIgaGVpZ2h0PSIzNTkiPjxzdHlsZT4uczAgeyBmaWxsOiAjZmZmZmZmIH08L3N0eWxlPjxnPjxwYXRoIGNsYXNzPSJzMCIgZD0ibTg4MyAzMTcuM2MwIDIuOSAwLjkgNC42IDIuNiA0LjYgMS4zLTAuMiAyLjYtMC44IDMuNi0xLjVsNDc0LjQtMzA4LjJxMy0yLjEgNi4zLTMuNyAzLjItMS42IDYuNy0yLjYgMy41LTEuMSA3LjEtMS42IDMuNi0wLjQgNy4zLTAuM2gxMDQuMmMxNiAwIDI2LjggMTAuNiAyNi44IDI2LjZ2MTk5LjNjMCAyNC4xLTUuMyAzOC4xLTI2LjYgNTAuOWwtMTI2LjUgNzYuMXEtMC41IDAuNC0xIDAuNi0wLjUgMC4zLTEgMC41LTAuNiAwLjItMS4xIDAuMy0wLjYgMC4xLTEuMSAwLjJjLTEuNiAwLTMuMS0xLjMtMy4xLTUuN3YtMjMyLjRjMC0yLjgtMC43LTQuNi0yLjYtNC42cS0wLjUgMC0xIDAuMi0wLjQgMC4xLTAuOSAwLjMtMC41IDAuMi0wLjkgMC40LTAuNCAwLjMtMC44IDAuNmwtMzQ2LjcgMjI1LjVjLTcuOSA1LjMtMTcuMiA4LjItMjYuNiA4aC0yMjkuOGMtMTYuMiAwLTI2LjgtMTAuNi0yNi44LTI2Ljh2LTI4Ny4xYzAtMi4yLTAuOS00LjEtMi44LTQuMXEtMC41IDAtMC45IDAuMS0wLjUgMC4yLTEgMC40LTAuNSAwLjItMC45IDAuNC0wLjQgMC4zLTAuOCAwLjZsLTIyOC44IDEzNy40Yy0yLjIgMS41LTIuOCAyLjYtMi44IDMuNiAwIDEgMC40IDEuOSAxLjkgMy42bDE2My41IDE2My40YzIuMSAyLjEgMy42IDMuOCAzLjYgNS43IDAgMS41LTIuNCAyLjctNS4zIDIuN2gtMTQ3LjZjLTExLjYgMC0yMC42LTEuNy0yNi44LTcuOWwtOTkuMS05OS4xcS0wLjMtMC4zLTAuNi0wLjYtMC4zLTAuMi0wLjctMC40LTAuNC0wLjItMC45LTAuMy0wLjQtMC4yLTAuOC0wLjItMC40IDAtMC44IDAuMS0wLjQgMC4xLTAuOCAwLjItMC40IDAuMS0wLjcgMC4zLTAuNCAwLjEtMC44IDAuM2wtMTY1LjUgOTkuN2MtMTAuMSA2LjEtMTYuOSA3LjctMjYuOCA3LjdoLTE1Mi40Yy0xNi4yIDAuMi0yNi45LTEwLjYtMjYuOS0yNi42di0xOTUuNWMwLTI0LjIgNS4zLTM4LjEgMjYuOC01MC45bDEyNy4yLTc2LjRxMC40LTAuMyAwLjgtMC41IDAuNC0wLjIgMC44LTAuMyAwLjQtMC4xIDAuOS0wLjIgMC40LTAuMSAwLjktMC4xYzEuOSAwIDMgMiAzIDYuNHYyNjEuN2MwIDIuOCAwLjYgNCAyLjYgNCAxLjQtMC4yIDIuNi0wLjggMy44LTEuNWw0MjkuOC0yNTguOWM4LjItNS42IDE4LjItOC4zIDI4LjMtNy45aDIzMS4zYzE2IDAgMjYuOCAxMC43IDI2LjggMjYuN2wtMC4yIDI4Ni44eiIvPjwvZz48L3N2Zz4=" : "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDE1MjMgMzU5IiB3aWR0aD0iMTUyMyIgaGVpZ2h0PSIzNTkiPgoJPHRpdGxlPktJQV9sb2dvMy1zdmc8L3RpdGxlPgoJPHN0eWxlPgoJCS5zMCB7IGZpbGw6ICMxMzFlMjkgfSAKCTwvc3R5bGU+Cgk8ZyBpZD0iTGF5ZXIiPgoJCTxnIGlkPSJzdmdfMSI+CgkJCTxwYXRoIGlkPSJzdmdfMiIgY2xhc3M9InMwIiBkPSJtODgzIDMxNy4zYzAgMi45IDAuOSA0LjYgMi42IDQuNiAxLjMtMC4yIDIuNi0wLjggMy42LTEuNWw0NzQuNC0zMDguMnEzLTIuMSA2LjMtMy43IDMuMi0xLjYgNi43LTIuNiAzLjUtMS4xIDcuMS0xLjYgMy42LTAuNCA3LjMtMC4zaDEwNC4yYzE2IDAgMjYuOCAxMC42IDI2LjggMjYuNnYxOTkuM2MwIDI0LjEtNS4zIDM4LjEtMjYuNiA1MC45bC0xMjYuNSA3Ni4xcS0wLjUgMC40LTEgMC42LTAuNSAwLjMtMSAwLjUtMC42IDAuMi0xLjEgMC4zLTAuNiAwLjEtMS4xIDAuMmMtMS42IDAtMy4xLTEuMy0zLjEtNS43di0yMzIuNGMwLTIuOC0wLjctNC42LTIuNi00LjZxLTAuNSAwLTEgMC4yLTAuNCAwLjEtMC45IDAuMy0wLjUgMC4yLTAuOSAwLjQtMC40IDAuMy0wLjggMC42bC0zNDYuNyAyMjUuNWMtNy45IDUuMy0xNy4yIDguMi0yNi42IDhoLTIyOS44Yy0xNi4yIDAtMjYuOC0xMC42LTI2LjgtMjYuOHYtMjg3LjFjMC0yLjItMC45LTQuMS0yLjgtNC4xcS0wLjUgMC0wLjkgMC4xLTAuNSAwLjItMSAwLjQtMC41IDAuMi0wLjkgMC40LTAuNCAwLjMtMC44IDAuNmwtMjI4LjggMTM3LjRjLTIuMiAxLjUtMi44IDIuNi0yLjggMy42IDAgMSAwLjQgMS45IDEuOSAzLjZsMTYzLjUgMTYzLjRjMi4xIDIuMSAzLjYgMy44IDMuNiA1LjcgMCAxLjUtMi40IDIuNy01LjMgMi43aC0xNDcuNmMtMTEuNiAwLTIwLjYtMS43LTI2LjgtNy45bC05OS4xLTk5LjFxLTAuMy0wLjMtMC42LTAuNi0wLjMtMC4yLTAuNy0wLjQtMC40LTAuMi0wLjktMC4zLTAuNC0wLjItMC44LTAuMi0wLjQgMC0wLjggMC4xLTAuNCAwLjEtMC44IDAuMi0wLjQgMC4xLTAuNyAwLjMtMC40IDAuMS0wLjggMC4zbC0xNjUuNSA5OS43Yy0xMC4xIDYuMS0xNi45IDcuNy0yNi44IDcuN2gtMTUyLjRjLTE2LjIgMC4yLTI2LjktMTAuNi0yNi45LTI2LjZ2LTE5NS41YzAtMjQuMiA1LjMtMzguMSAyNi44LTUwLjlsMTI3LjItNzYuNHEwLjQtMC4zIDAuOC0wLjUgMC40LTAuMiAwLjgtMC4zIDAuNC0wLjEgMC45LTAuMiAwLjQtMC4xIDAuOS0wLjFjMS45IDAgMyAyIDMgNi40djI2MS43YzAgMi44IDAuNiA0IDIuNiA0IDEuNC0wLjIgMi42LTAuOCAzLjgtMS41bDQyOS44LTI1OC45YzguMi01LjYgMTguMi04LjMgMjguMy03LjloMjMxLjNjMTYgMCAyNi44IDEwLjcgMjYuOCAyNi43bC0wLjIgMjg2Ljh6Ii8+CgkJPC9nPgoJPC9nPgo8L3N2Zz4="}
+                    style={{width:70, height:18, display:"block", margin:"0 auto 6px", opacity: activeTab === 0 ? 1 : 0.35}} />
+                ) : (
+                  <img src={darkMode ? "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDExOTkgMTU4MCIgd2lkdGg9IjExOTkiIGhlaWdodD0iMTU4MCI+PHN0eWxlPi5zMCB7IGZpbGw6ICNmZmZmZmYgfTwvc3R5bGU+PHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGFzcz0iczAiIGQ9Im05NTkuMyA3ODkuNWwtNDE5LjkgNzg5LjVoLTExOS44bC00MTkuNi03ODkuNSA0MTkuNi03ODkuNWgxMTkuOGwtNDE5LjMgNzg5LjUgMzU5LjYgNjc2LjcgMzU5LjUtNjc2LjctMjA5LjgtMzk0LjYgNjAtMTEyLjh6bTIzOS43IDBsLTQxOS42IDc4OS41aC0xMTkuOGw0MTkuNi03ODkuOC0zNTkuNi02NzYuNy0zNTkuNSA2NzYuNyAyMDkuOCAzOTQuOS02MC4xIDExMi44LTI2OS44LTUwNy40IDQxOS42LTc4OS41aDExOS44eiIvPjwvc3ZnPg==" : "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDExOTkgMTU4MCIgd2lkdGg9IjExOTkiIGhlaWdodD0iMTU4MCI+Cgk8dGl0bGU+cmVuYXVsdC1sb2dvLXN2ZzwvdGl0bGU+Cgk8c3R5bGU+CgkJLnMwIHsgZmlsbDogIzAwMDAwMCB9IAoJPC9zdHlsZT4KCTxwYXRoIGlkPSJMYXllciIgZmlsbC1ydWxlPSJldmVub2RkIiBjbGFzcz0iczAiIGQ9Im05NTkuMyA3ODkuNWwtNDE5LjkgNzg5LjVoLTExOS44bC00MTkuNi03ODkuNSA0MTkuNi03ODkuNWgxMTkuOGwtNDE5LjMgNzg5LjUgMzU5LjYgNjc2LjcgMzU5LjUtNjc2LjctMjA5LjgtMzk0LjYgNjAtMTEyLjh6bTIzOS43IDBsLTQxOS42IDc4OS41aC0xMTkuOGw0MTkuNi03ODkuOC0zNTkuNi02NzYuNy0zNTkuNSA2NzYuNyAyMDkuOCAzOTQuOS02MC4xIDExMi44LTI2OS44LTUwNy40IDQxOS42LTc4OS41aDExOS44eiIvPgo8L3N2Zz4="}
+                    style={{width:22, height:28, display:"block", margin:"0 auto 6px", opacity: activeTab === 1 ? 1 : 0.35}} />
+                )}
+                <span style={{fontSize:14, fontWeight:"bold", display:"block"}}>{v.id === "stonic" ? "Stonic" : "Kadjar"}</span>
+                <span style={{fontSize:11, opacity:0.6}}>{v.cv}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Panel véhicule actif */}
+          {VEHICULES.map((v, i) => (
+            <div key={v.id} style={{display: activeTab === i ? "block" : "none"}}>
+              <VehiculePanel vehicule={v} annee={annee} />
+            </div>
+          ))}
+
+          <div className="footer">Jours fériés France métropole · 2025–2030</div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById("root"));
+  </script>
+
+  <script>
+    const manifest = {
+      name: "Frais Réels",
+      short_name: "Frais Réels",
+      description: "Calculateur frais kilométriques France",
+      start_url: "./",
+      display: "standalone",
+      background_color: "#0f0f13",
+      theme_color: "#0f0f13",
+      orientation: "portrait",
+      icons: [
+        { src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAER0lEQVR42u3dy40bMRAFQGawBwN7dIjOy5k4LDuC9UjLT79mAe8uiSz0jDA9zfHx8UPk7QxLIAAJQAKQACQCkAAkAAlAIgAJQAKQACQCkAAkAJXKn9+/vhOAcJkcgKCBCaCjbu6RNLghCaAAN10lDW7+5fPz53shaVxI520uS0kBVJrOUjQTMQFUiM4RNFMwAYTOLYxGJz1l3bwtCSB0mjMa6XpC6bzKCCB0ejIaiXqa0XmJEUDotGI0UvRcQuc5I4Do6WBoFNdzLZ2HjACiJ9vQoIehSEBuenrcEg2FRykKA0RPJ0OFAGExxVBzQPQ0MzToYSgDED0tDQ16GKoOiJ7GhgY9DOUBstk7DQUDUn7aF6FBD0NJgGxwswvZoIehcoDouccQQK896wZoOaC4dT81nKqHoXGtnukj6+40dB2gDcMPAeqpZ/MMzUsMXQHo4ChWgLL1FJno29hQZ0ClpkIDlKSn7HDxfoYaAio+oB4gehhqCijooAyAvgJET5Chw4CKLE2cnlILVQtQtJ6yn1i2CMUDOr6FcYYKATq+HHV2LsjQ3KvYyC0/BTcs1xBA8QfOXQcoUY9G6emGIgHRA9BuQMTUAnRwk+gp9V9stC8/rCwtQmGA6AFoHyBEigI6tVvKT8HboKH8MAQQPQApPwBpEwMIIIAWA0rpjgBozx+xUfkGCKD6RQgggAACCCCAAAIIIIAAAggggDwCAwgggAACCCABCCCA/AsDCCCAAAIIIIAAAggggAACCKASgPRE64n2VgZAXusBCCBvpgLkoRhApnMAZD4QQ3XnAylCyo8ZiXIlIIbaAjIn+sIbIJPqAXLUAUMAMXQjIOeFBX2rRXqcWNj/K4UBcmaqM1Od2hz2BQ6WH+fGOze+HqB0Q70b0OZevyYAKlKEtC8eKT+rADGUogegSEPpz78mA2LoWj09AVU21ODx+xJABQ1VY9SjeeMuQHUMten+WQiorKGzjDr1jt0L6Aijfs2HywHVN7SHUcvWVYCWS+rd+7wJUJahuE6ManqWAEo09JzUhe9dAKTrOQ0QQ5foWQiIoRv0HADE0KkbuDxADLXXsxyQC1nji9dJQAz1KD87ADHUWM8mQAx11bMPEEMt9WwFxFA/PbsBMdRMzwFADHXSUwsQQ1P6BfoDYqiNnmOAvjaE0Xu9b0f28RggpSi68FQBxFC0nhKAGMrVUwWQW6Kgm56igBhK1FML0H8N3cPov+tQZ8tqAcIoiE5dQE8M9WP05CcX3KmigK5iFEonANBDQ7mMHv66yhtUHVBXRg3oJAF6bqi4pJd+RcS+xABKZ9SPTiSgNxhlDT6P24tIQG8zqnzgXOguBAP6JqMppKZ8evT6xwOaK2lneix7H0ApkpqtdkNANSV1XeTOgCpIar+2VwDajOmq9bwO0HRSl68eQAKQACQACUAiAAlAApAAJAKQACQACUAiAAlAUip/Aaiod7kYmzrqAAAAAElFTkSuQmCC", sizes: "192x192", type: "image/png" },
+        { src: "data:image/png;base64,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", sizes: "512x512", type: "image/png", purpose: "any maskable" }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], {type: "application/json"});
+    document.getElementById("pwa-manifest").setAttribute("href", URL.createObjectURL(blob));
+    document.getElementById("apple-icon").setAttribute("href", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAER0lEQVR42u3dy40bMRAFQGawBwN7dIjOy5k4LDuC9UjLT79mAe8uiSz0jDA9zfHx8UPk7QxLIAAJQAKQACQCkAAkAAlAIgAJQAKQACQCkAAkAJXKn9+/vhOAcJkcgKCBCaCjbu6RNLghCaAAN10lDW7+5fPz53shaVxI520uS0kBVJrOUjQTMQFUiM4RNFMwAYTOLYxGJz1l3bwtCSB0mjMa6XpC6bzKCCB0ejIaiXqa0XmJEUDotGI0UvRcQuc5I4Do6WBoFNdzLZ2HjACiJ9vQoIehSEBuenrcEg2FRykKA0RPJ0OFAGExxVBzQPQ0MzToYSgDED0tDQ16GKoOiJ7GhgY9DOUBstk7DQUDUn7aF6FBD0NJgGxwswvZoIehcoDouccQQK896wZoOaC4dT81nKqHoXGtnukj6+40dB2gDcMPAeqpZ/MMzUsMXQHo4ChWgLL1FJno29hQZ0ClpkIDlKSn7HDxfoYaAio+oB4gehhqCijooAyAvgJET5Chw4CKLE2cnlILVQtQtJ6yn1i2CMUDOr6FcYYKATq+HHV2LsjQ3KvYyC0/BTcs1xBA8QfOXQcoUY9G6emGIgHRA9BuQMTUAnRwk+gp9V9stC8/rCwtQmGA6AFoHyBEigI6tVvKT8HboKH8MAQQPQApPwBpEwMIIIAWA0rpjgBozx+xUfkGCKD6RQgggAACCCCAAAIIIIAAAggggDwCAwgggAACCCABCCCA/AsDCCCAAAIIIIAAAggggAACCKASgPRE64n2VgZAXusBCCBvpgLkoRhApnMAZD4QQ3XnAylCyo8ZiXIlIIbaAjIn+sIbIJPqAXLUAUMAMXQjIOeFBX2rRXqcWNj/K4UBcmaqM1Od2hz2BQ6WH+fGOze+HqB0Q70b0OZevyYAKlKEtC8eKT+rADGUogegSEPpz78mA2LoWj09AVU21ODx+xJABQ1VY9SjeeMuQHUMten+WQiorKGzjDr1jt0L6Aijfs2HywHVN7SHUcvWVYCWS+rd+7wJUJahuE6ManqWAEo09JzUhe9dAKTrOQ0QQ5foWQiIoRv0HADE0KkbuDxADLXXsxyQC1nji9dJQAz1KD87ADHUWM8mQAx11bMPEEMt9WwFxFA/PbsBMdRMzwFADHXSUwsQQ1P6BfoDYqiNnmOAvjaE0Xu9b0f28RggpSi68FQBxFC0nhKAGMrVUwWQW6Kgm56igBhK1FML0H8N3cPov+tQZ8tqAcIoiE5dQE8M9WP05CcX3KmigK5iFEonANBDQ7mMHv66yhtUHVBXRg3oJAF6bqi4pJd+RcS+xABKZ9SPTiSgNxhlDT6P24tIQG8zqnzgXOguBAP6JqMppKZ8evT6xwOaK2lneix7H0ApkpqtdkNANSV1XeTOgCpIar+2VwDajOmq9bwO0HRSl68eQAKQACQACUAiAAlAApAAJAKQACQACUAiAAlAUip/Aaiod7kYmzrqAAAAAElFTkSuQmCC");
+    if ("serviceWorker" in navigator) {
+      const swCode = atob("Y29uc3QgQ0FDSEU9J2pvdXJzLXYxJztjb25zdCBGSUxFUz1bJy4vJ107c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJyxlPT57ZS53YWl0VW50aWwoY2FjaGVzLm9wZW4oQ0FDSEUpLnRoZW4oYz0+Yy5hZGRBbGwoRklMRVMpKSk7c2VsZi5za2lwV2FpdGluZygpO30pO3NlbGYuYWRkRXZlbnRMaXN0ZW5lcignYWN0aXZhdGUnLGU9PntlLndhaXRVbnRpbChjYWNoZXMua2V5cygpLnRoZW4oaz0+UHJvbWlzZS5hbGwoay5maWx0ZXIoeD0+eCE9PUNBQ0hFKS5tYXAoeD0+Y2FjaGVzLmRlbGV0ZSh4KSkpKSk7c2VsZi5jbGllbnRzLmNsYWltKCk7fSk7c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsZT0+e2UucmVzcG9uZFdpdGgoY2FjaGVzLm1hdGNoKGUucmVxdWVzdCkudGhlbihyPT5yfHxmZXRjaChlLnJlcXVlc3QpKSk7fSk7");
+      const swBlob = new Blob([swCode], {type: "application/javascript"});
+      navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(e => console.log("SW:", e));
+    }
+  </script>
+</body>
+</html>
